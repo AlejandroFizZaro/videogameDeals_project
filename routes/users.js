@@ -1,8 +1,8 @@
 // http://localhost:3000/users/
-import express from "express";
-const router = express.Router();
-
 import controllerUser from "../controllers/users.js";
+import express from "express";
+
+const router = express.Router();
 
 router.get("/", (req, res) => {
 	res.send("User menu");
@@ -29,10 +29,31 @@ router.get("/:id", (req, res) => {
 	controllerUser.getById(id);
 });
 
+router.post("/register", (req, res) => {
+	let data = req.body;
+	let { email, password } = data;
+	if (!email || !password)
+		return res.status(401).json({ error: "Missing credentials" });
+
+	controllerUser.register(data);
+});
+
 router.post("/login", (req, res) => {
 	let data = req.body;
+	let { email, password } = data;
+	if (!email || !password)
+		return res.status(401).json({ error: "Missing credentials" });
+
 	controllerUser.login(data);
-	res.send("JWT printed!");
+});
+
+router.post("/:id/replace", (req, res) => {
+	let id = req.params.id;
+	let data = req.body;
+	if (!email) {
+		return res.status(401).json({ error: "Missing email" });
+	}
+	controllerUser.replace(data);
 });
 
 export default router;

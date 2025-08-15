@@ -1,6 +1,7 @@
 // http://localhost:3000/favourites/
 import controllerFavourites from "../controllers/favourites.js";
 import express from "express";
+
 const router = express.Router();
 
 router.get("/", (req, res) => {
