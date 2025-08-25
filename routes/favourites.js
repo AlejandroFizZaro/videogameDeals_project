@@ -1,6 +1,7 @@
 // http://localhost:3000/favourites/
 import controllerFavourites from "../controllers/favourites.js";
 import express from "express";
+import { param } from "express-validator";
 
 const router = express.Router();
 
@@ -8,18 +9,30 @@ router.get("/", (req, res) => {
 	res.send("Favourite menu");
 });
 
-router.post("/:id/add/:game", (req, res) => {
-	const user_id = req.params.id;
-	const game_id = req.params.game;
-	controllerFavourites.add(user_id, game_id);
-});
+// Developer routes. The ideal way would be to check the user role (i.e. Company admin)
+// TODO: When implementing this kind of checks, check the user role
+/*
 
-// TODO: Only during dev time. Later on, remove this router method
 router.get("/create", (req, res) => {
 	controllerFavourites.createFavouriteDb();
-	res.send(
-		"Original favourites database created, remember that this is just for testing. Your project should have modificable, persistant data"
-	);
+	res.send("Favourites database created");
 });
+
+router.get("/delete", (req, res) => {
+	controllerFavourites.deleteTable();
+	res.send("Favourite database removed.");
+});
+
+*/
+
+router.post(
+	"/:id/add/:game",
+	[param("id").notEmpty().isInt(), param("game").notEmpty().isInt()],
+	(req, res) => {
+		const user_id = req.params.id;
+		const game_id = req.params.game;
+		controllerFavourites.add(user_id, game_id);
+	}
+);
 
 export default router;

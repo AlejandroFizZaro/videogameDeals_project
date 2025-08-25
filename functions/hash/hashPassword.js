@@ -1,41 +1,41 @@
 import insertToUserDb from "../db/dbUserHashPassword.js";
-import getHashedPasswordfromDb from "../db/dbgetHashedPassword.js";
-import bcrypt from "bcrypt";
-const saltRounds = 10;
+import controllerUser from "../../controllers/users.js";
+import bcrypt from "bcryptjs";
 
-// In case the account is registered the first time, the user data + hash is uploaded to the user database.
-let hashPasswordAndSendToDb = (data) => {
-  let { userName, email, password } = data;
-  bcrypt.hash(password, saltRounds, function (err, hashedPassword) {
-    newData = {
-      userName,
-      email,
-      hashedPassword,
-    };
-    insertToUserDb(newData);
-  });
+let hashPasswordAndSendToDb = async (data) => {
+	let { userName, email, password } = data;
+	const salt = await bcrypt.genSalt(10);
+	const hash = await bcrypt.hash(password, salt);
+
+	let newUserData = {
+		userName,
+		email,
+		hash,
+	};
+	let response = await insertToUserDb(newUserData);
+	return response;
 };
 
-// Hashed password from user id is extracted and compared with password from POST http call
-// If success, access granted and JWT token generated
-// JWT token goes to sessions database
-// TODO: create sessions database
-// TODO: Define the data that will be inside JWT and state JWT creation and refresh
-let comparePassword = async (data) => {
-  let { email, inputPasswordFromPostCall } = data;
-  let hashedPasswordFromDB = getHashedPasswordfromDb(email);
-  bcrypt.compare(
-    inputPasswordFromPostCall,
-    hashedPasswordFromDB,
-    (err, result) => {
-      result = true
-        ? insertToUserDb(data, hashedPasswordFromDB)
-        : console.log(err);
-    }
-  );
+let comparePasswordWithHash = async (data) => {
+	let { userName, email, password } = data;
+	let userData = {};
+	let hashedPasswordFromDB = "";
+	email
+		? (userData = await controllerUser.getByEmail(email))
+		: (userData = await controllerUser.getUserName(userName));
+
+	hashedPasswordFromDB = userData[0].password;
+	const result = await new Promise((resolve, reject) => {
+		bcrypt.compare(password, hashedPasswordFromDB, (err, res) => {
+			if (err) reject(err);
+			res === true ? resolve(userData) : resolve(res);
+		});
+	});
+	console.log("Out of compare", result);
+	return result;
 };
 
 export default {
-  hashPasswordAndSendToDb,
-  comparePassword,
+	hashPasswordAndSendToDb,
+	comparePasswordWithHash,
 };

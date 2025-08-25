@@ -7,43 +7,42 @@ let createFavouriteDb = async () => {
 	await sql`DROP TABLE IF EXISTS favourites`;
 	console.log("Old favourite games table was removed...");
 
-	await sql`CREATE TABLE IF NOT EXISTS favourites ( id SERIAL PRIMARY KEY, title VARCHAR(255), description VARCHAR(1000), user_id SERIAL references users(id))`;
+	await sql`CREATE TABLE IF NOT EXISTS favourites ( id SERIAL PRIMARY KEY, game_id VARCHAR(255) NOT NULL, user_id SERIAL references users(id) NOT NULL, UNIQUE (game_id, user_id))`;
 	console.log("Favourite games table was created...");
+};
+
+let deleteTable = async () => {
+	await sql`DROP TABLE IF EXISTS  favourites`;
 };
 
 let getAllFavouritesFromAllUsers = async () => {
 	await sql`SELECT id, title, description from favourites`;
 };
 let getAllFavouritesByUserBasicData = async (fk_user_id) => {
-	await sql`SELECT id, title, description from favourites WHERE user_id = fk_user_id`;
+	await sql`SELECT id, title, description from favourites WHERE user_id = ${fk_user_id}`;
 };
 
 let getOneFavouriteByUser = async (fk_user_id, favourite_id) => {
-	await sql`SELECT id, title, description from favourites WHERE user_id = fk_user_id and id = favourite_id`;
+	await sql`SELECT id, title, description from favourites WHERE user_id = ${fk_user_id} and id = ${favourite_id}`;
 };
 
-// TODO: Check if, with only one method we can do it in an efficient way, think so
-let removeOneFavouriteFromUser = async (fk_user_id, favourite_id) => {
-	await sql`DELETE from favourites where user_id = fk_user_id and id = favourite_id`;
-};
 // Idea: Loop through array of selected favs
 let removeMultipleFavouriteFromUser = async (favourites) => {
-	const favourite = (favourites = "tbd");
 	for (favourite in favourites) {
 		await sql`DELETE FROM favourite WHERE id = ${favourite.id}`;
 	}
 };
 
-let addFavourite = async () => {
-	await sql`INSERT INTO favourites (game), VALUES(game_id) WHERE userId = user_id`;
+let addFavourite = async (game_id, user_id) => {
+	await sql`INSERT INTO favourites (game_id), VALUES(${game_id}) WHERE userId = ${user_id} ON CONFLICT DO NOTHING`;
 };
 
 export default {
 	createFavouriteDb,
+	deleteTable,
 	getAllFavouritesFromAllUsers,
 	getAllFavouritesByUserBasicData,
 	getOneFavouriteByUser,
-	removeOneFavouriteFromUser,
 	removeMultipleFavouriteFromUser,
 	addFavourite,
 };
