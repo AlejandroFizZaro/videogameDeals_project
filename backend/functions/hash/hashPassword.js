@@ -24,14 +24,13 @@ let comparePasswordWithHash = async (data) => {
 		? (userData = await controllerUser.getByEmail(email))
 		: (userData = await controllerUser.getUserName(userName));
 
-	hashedPasswordFromDB = userData[0].password;
+	hashedPasswordFromDB = userData.password;
 	const result = await new Promise((resolve, reject) => {
 		bcrypt.compare(password, hashedPasswordFromDB, (err, res) => {
 			if (err) reject(err);
 			res === true ? resolve(userData) : resolve(res);
 		});
 	});
-	console.log("Out of compare", result);
 	return result;
 };
 

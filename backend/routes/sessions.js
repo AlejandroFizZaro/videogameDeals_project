@@ -12,7 +12,6 @@ router.get("/", (req, res) => {
 // Developer routes. The ideal way would be to check the user role (i.e. Company admin)
 // TODO: When implementing this kind of checks, check the user role
 
-/*
 router.get("/delete", (req, res) => {
 	controllerSessions.removeTable();
 	res.send("Sessions table removed");
@@ -32,8 +31,6 @@ router.get("/create", (req, res) => {
 	controllerSessions.createTable();
 	res.send("Sessions database created.");
 });
-
-*/
 
 router.post("/remove/:id", [param("id").notEmpty().isInt()], (req, res) => {
 	const errors = validationResult(req);

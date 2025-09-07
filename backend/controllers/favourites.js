@@ -18,11 +18,11 @@ let deleteTable = async () => {
 let getAllFavouritesFromAllUsers = async () => {
 	await sql`SELECT id, title, description from favourites`;
 };
-let getAllFavouritesByUserBasicData = async (fk_user_id) => {
+let getById = async (fk_user_id) => {
 	await sql`SELECT id, title, description from favourites WHERE user_id = ${fk_user_id}`;
 };
 
-let getOneFavouriteByUser = async (fk_user_id, favourite_id) => {
+let getByUserIdByGame = async (fk_user_id, favourite_id) => {
 	await sql`SELECT id, title, description from favourites WHERE user_id = ${fk_user_id} and id = ${favourite_id}`;
 };
 
@@ -41,8 +41,8 @@ export default {
 	createFavouriteDb,
 	deleteTable,
 	getAllFavouritesFromAllUsers,
-	getAllFavouritesByUserBasicData,
-	getOneFavouriteByUser,
+	getById,
+	getByUserIdByGame,
 	removeMultipleFavouriteFromUser,
 	addFavourite,
 };

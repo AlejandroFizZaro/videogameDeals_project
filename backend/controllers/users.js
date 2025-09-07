@@ -3,36 +3,56 @@ import createNewToken from "../functions/JWT/createNewToken.js";
 import hashPassword from "../functions/hash/hashPassword.js";
 import controllerSessions from "./sessions.js";
 import validateToken from "../functions/JWT/validator.js";
+import signRefreshToken from "../functions/JWT/refreshToken.js";
 
+// Get all data
 let getAll = async () => {
-	console.log("Good, accessed to user endpoint");
-	await sql`SELECT * from users`;
+	let response = await sql`SELECT * from users`[0];
+	return response;
 };
 
 let getById = async (id) => {
-	await sql`SELECT * from users WHERE id = ${id}`;
+	let response = await sql`SELECT * from users WHERE id = ${id}`;
+	return response[0];
 };
 
 let getByEmail = async (email) => {
-	let response = await sql`SELECT * from users WHERE email = ${email ?? null}`;
-	return response;
+	let emailData = email ?? null;
+	let response = await sql`SELECT * from users WHERE email = ${emailData}`;
+	return response[0];
 };
 
 let getByUsername = async (userName) => {
-	let response = await sql`SELECT * from users WHERE user_name = ${
-		userName ?? null
-	}`;
-	return response;
+	let userNameData = userName ?? null;
+	let response =
+		await sql`SELECT * from users WHERE user_name = ${userNameData}`;
+	return response[0];
 };
 
+//
+
+// Get all data without passwords
+let getByIdWithoutPassword = async (id) => {
+	let response = await sql`SELECT user_name, email from users WHERE id = ${id}`;
+	return response[0];
+};
+
+//
+
 let createUserDb = async () => {
-	await sql`CREATE TABLE IF NOT EXISTS users 
-	( id SERIAL PRIMARY KEY,
-		user_name VARCHAR(255),
-		email VARCHAR(255),
-		password VARCHAR(300),
-		UNIQUE (user_name, email)
-	)`;
+	try {
+		await sql`CREATE TABLE IF NOT EXISTS users 
+			( id SERIAL PRIMARY KEY,
+			user_name VARCHAR(255),
+			email VARCHAR(255),
+			password VARCHAR(300),
+			UNIQUE (user_name, email)
+		)`;
+		return true;
+	} catch (error) {
+		console.log(error);
+		return false;
+	}
 };
 
 let register = async (data) => {
@@ -53,25 +73,27 @@ let register = async (data) => {
 };
 
 // TODO: Check  how backend accept token from frontend (to do once start workin in frontend)
-let login = async (cookieToken, data) => {
-	let access = false;
-	let tokenValidationStatus = validateToken(cookieToken);
+let login = async (data) => {
+	const { token, email, userName, password } = data;
+	let tokenValidationStatus = validateToken(token);
 	let tokenIsCorrect = (await tokenValidationStatus)?.correct;
 	let tokenIsExpired = (await tokenValidationStatus)?.expired;
 
-	let tokenIsValid = cookieToken && tokenIsCorrect && !tokenIsExpired;
+	let tokenIsValid = token && tokenIsCorrect && !tokenIsExpired;
 
 	if (tokenIsValid) {
 		console.log("Access granted");
 		access = true;
-		return access;
+		return token;
 	} else {
-		if (data) {
+		if ((email || userName) && password) {
 			// Compare the hash password with the input password.
 			// If the password is ok, the function will return the user data in an object
 			// In case it not ok, it will send a "false" value
+			let credentials = { email, userName, password };
+			console.log("credentials", credentials);
 			let authenticatedUserData = await hashPassword.comparePasswordWithHash(
-				data
+				credentials
 			);
 			if (authenticatedUserData === false) {
 				console.log("The credentials are not correct. Please repeat again");
@@ -79,20 +101,18 @@ let login = async (cookieToken, data) => {
 			}
 			// User data is sent from the authenticator as an object
 			if (typeof authenticatedUserData === "object") {
-				console.log("Credentials are correct");
-				let userId = authenticatedUserData[0]?.id;
-
-				if (cookieToken && tokenIsExpired) {
-					let refreshToken = refreshToken(userId);
+				let userId = authenticatedUserData?.id;
+				if (token && tokenIsExpired) {
+					let refreshToken = signRefreshToken(userId);
 					// TODO: Set function for token refresh replace
 					await controllerSessions.replace(userId, refreshToken);
+					return refreshToken;
 				}
-				if (!cookieToken) {
+				if (!token) {
 					let newToken = createNewToken(authenticatedUserData);
 					await controllerSessions.add(userId, newToken);
+					return newToken;
 				}
-				access = true;
-				return { access };
 			} else {
 				console.log(
 					"An error occurred while validating the credentials. Please try again"
@@ -123,9 +143,9 @@ let replace = async (data) => {
 
 let getUserId = async (email, userName) => {
 	if (email || (email && userName) || (email && !userName)) {
-		return (await getByEmail(email))[0]?.id;
+		return (await getByEmail(email))?.id;
 	} else if (userName) {
-		return (await getByUsername(userName))[0]?.id;
+		return (await getByUsername(userName))?.id;
 	}
 };
 
@@ -138,6 +158,7 @@ export default {
 	getById,
 	getByEmail,
 	getByUsername,
+	getByIdWithoutPassword,
 	createUserDb,
 	register,
 	login,

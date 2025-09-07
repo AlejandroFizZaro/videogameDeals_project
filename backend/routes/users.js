@@ -1,13 +1,7 @@
 // http://localhost:3000/users/
 import controllerUser from "../controllers/users.js";
 import express from "express";
-import {
-	param,
-	body,
-	validationResult,
-	oneOf,
-	cookie,
-} from "express-validator";
+import { param, body, validationResult, oneOf } from "express-validator";
 
 const router = express.Router();
 
@@ -18,13 +12,12 @@ router.get("/", (req, res) => {
 // Developer routes. The ideal way would be to check the user role (i.e. Company admin)
 // TODO: When implementing this kind of checks, check the user role
 
-/*
 router.get("/all", (req, res) => {
 	controllerUser.getAll();
 	res.send("All user data obtained");
 });
 
- router.get("/create", (req, res) => {
+router.get("/create", (req, res) => {
 	controllerUser.createUserDb();
 	res.send("Users database created");
 });
@@ -33,7 +26,7 @@ router.get("/delete", (req, res) => {
 	controllerUser.removeTable();
 	res.send("User table removed");
 });
- */
+
 router.post(
 	"/register",
 	[
@@ -119,11 +112,7 @@ router.post(
 						),
 				],
 				// Option 3: cookie with token
-				[
-					cookie("token")
-						.notEmpty()
-						.withMessage("The cookie must not be empty."),
-				],
+				[body("token").notEmpty().withMessage("The cookie must not be empty.")],
 			],
 			"You must provide either email+password, userName+password, or a token cookie."
 		),
@@ -135,10 +124,10 @@ router.post(
 		}
 		// Token is stored in client side --> cookie
 		// TODO: Continue with frontend and go back to cookie in token test
-		const cookieToken = req.headers.cookie.split("=")[1];
-		if (!cookieToken) {
-			const data = req.body;
-			const { userName, email, password } = data;
+		const data = req.body;
+		const { userName, email, password, token } = data;
+		if (!token) {
+			console.log("Token was not used. Using credentials...");
 			if (
 				(!email && !userName) ||
 				(email && !userName) ||
@@ -146,19 +135,14 @@ router.post(
 				!password
 			)
 				return res.status(401).json({ error: "Missing credentials" });
-			controllerUser.login(cookieToken, data);
 		}
-		if (cookieToken) {
-			// Data is set as null because the login controller handle the data input:
-			// If empty, the token is used
-			const data = null;
-			controllerUser.login(cookieToken, data);
-		}
+		let response = controllerUser.login(data);
+		res.send(response);
 	}
 );
 
 router.post(
-	"/list/:id/replace",
+	"/list/replace/:id",
 	[
 		param("id").notEmpty().isInt().isUUID(),
 		body("email")
@@ -195,6 +179,11 @@ router.post(
 router.get("/list/:id", (req, res) => {
 	const id = req.params.id;
 	controllerUser.getById(id);
+});
+router.get("/:id", (req, res) => {
+	const id = req.params.id;
+	controllerUser.getByIdWithoutPassword(id);
+	res.send("Be careful");
 });
 
 export default router;

@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import "dotenv/config";
 
 let createAccountToken = (authenticatedUserData) => {
-	let { id, user_name, email, password } = authenticatedUserData;
+	let { id } = authenticatedUserData;
 	// Setting a secret to code the JWT token.
 	let privateKey = process.env.TOKEN_PRIVATE_KEY;
 
