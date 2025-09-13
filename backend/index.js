@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 
 import routerUsers from "./routes/users.js";
 import routerFavourites from "./routes/favourites.js";
@@ -8,6 +9,14 @@ const app = express();
 const port = 4000;
 
 app.use(express.json());
+
+// Habilitar CORS para el frontend de Next.js
+app.use(
+	cors({
+		origin: "http://localhost:3000", // origen de tu frontend
+		credentials: true, // si usas cookies/autenticación
+	})
+);
 
 app.use("/users", routerUsers);
 app.use("/sessions", routerSessions);

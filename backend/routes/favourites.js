@@ -5,17 +5,17 @@ import { param } from "express-validator";
 
 const router = express.Router();
 
-router.get("/", (req, res) => {
+router.get("/", (req, res, next) => {
 	res.send("Favourite menu");
 });
 // TODO: Set controller
-router.get("/list/:id", (req, res) => {
+router.get("/list/:id", (req, res, next) => {
 	const id = req.params.id;
 	controllerFavourites.getById(id);
 });
 
 // TODO: Set controller
-router.get("/list/:id/:game", (req, res) => {
+router.get("/list/:id/:game", (req, res, next) => {
 	const id = req.params.id;
 	const game = req.params.game;
 	controllerFavourites.getByUserIdByGame(id, game);
@@ -24,12 +24,12 @@ router.get("/list/:id/:game", (req, res) => {
 // Developer routes. The ideal way would be to check the user role (i.e. Company admin)
 // TODO: When implementing this kind of checks, check the user role
 
-router.get("/create", (req, res) => {
+router.get("/create", (req, res, next) => {
 	controllerFavourites.createFavouriteDb();
 	res.send("Favourites database created");
 });
 
-router.get("/delete", (req, res) => {
+router.get("/delete", (req, res, next) => {
 	controllerFavourites.deleteTable();
 	res.send("Favourite database removed.");
 });
@@ -37,7 +37,7 @@ router.get("/delete", (req, res) => {
 router.post(
 	"/:id/add/:game",
 	[param("id").notEmpty().isInt(), param("game").notEmpty().isInt()],
-	(req, res) => {
+	(req, res, next) => {
 		const user_id = req.params.id;
 		const game_id = req.params.game;
 		controllerFavourites.add(user_id, game_id);

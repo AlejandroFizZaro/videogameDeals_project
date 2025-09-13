@@ -12,7 +12,8 @@ let getAll = async () => {
 };
 
 let getById = async (id) => {
-	let response = await sql`SELECT * from users WHERE id = ${id}`;
+	let response =
+		await sql`SELECT id, user_name, email from users WHERE id = ${id}`;
 	return response[0];
 };
 
@@ -83,10 +84,9 @@ let login = async (data) => {
 
 	if (tokenIsValid) {
 		console.log("Access granted");
-		access = true;
 		return token;
 	} else {
-		if ((email || userName) && password) {
+		if ((email != "" || userName != "") && password) {
 			// Compare the hash password with the input password.
 			// If the password is ok, the function will return the user data in an object
 			// In case it not ok, it will send a "false" value
@@ -101,17 +101,21 @@ let login = async (data) => {
 			}
 			// User data is sent from the authenticator as an object
 			if (typeof authenticatedUserData === "object") {
+				// In the front end it was enabled the option to log with the user name or the email,
+				// In case user name or email is empty, it is necessary to fill the missing data
 				let userId = authenticatedUserData?.id;
+				let email = authenticatedUserData?.email;
+				let userName = authenticatedUserData?.user_name;
 				if (token && tokenIsExpired) {
 					let refreshToken = signRefreshToken(userId);
 					// TODO: Set function for token refresh replace
 					await controllerSessions.replace(userId, refreshToken);
-					return refreshToken;
+					return { email, userName, token: refreshToken };
 				}
 				if (!token) {
 					let newToken = createNewToken(authenticatedUserData);
 					await controllerSessions.add(userId, newToken);
-					return newToken;
+					return { email, userName, token: newToken };
 				}
 			} else {
 				console.log(

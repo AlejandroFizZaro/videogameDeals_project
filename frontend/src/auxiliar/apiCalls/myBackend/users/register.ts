@@ -1,27 +1,28 @@
 import { apiRestUrl, registerUrl, userUrl } from "../apiRestUrl";
 
 type data = {
-	email: string;
-	userName: string;
+	email: string | null;
+	userName: string | null;
 	password: string;
 };
 
-export default async function userRegister(data: data): Promise<boolean> {
+export default async function userRegister(data: data): Promise<any> {
 	let { email, userName, password } = data;
 	try {
-		let res = await fetch(`${apiRestUrl}/${userUrl}/${registerUrl}`, {
+		let response = await fetch(`${apiRestUrl}/${userUrl}/${registerUrl}`, {
 			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
 			body: JSON.stringify({
 				email,
 				userName,
 				password,
 			}),
 		});
-		let response = await res.json();
-
-		return response === true; //True: Register complete; False: Register failed
+		return response.json();
 	} catch (error) {
 		console.log("Register error:", error);
-		return false;
+		return error;
 	}
 }

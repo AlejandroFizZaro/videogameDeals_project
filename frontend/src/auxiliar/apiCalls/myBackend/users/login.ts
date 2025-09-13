@@ -1,21 +1,29 @@
-import { tokenFromLocalStorage } from "../../../weBrowserResources/websiteResources";
 import { apiRestUrl, userUrl, loginUrl } from "../apiRestUrl";
 
 type data = {
-	email: string;
-	userName: string;
+	email: string | null;
+	userName: string | null;
 	password: string;
-	token: string;
+	token?: string;
 };
 
-export default async function userLogin(data: data): Promise<boolean> {
+type response = {
+	email: string | null;
+	userName: string | null;
+	token?: string;
+};
+
+export default async function userLogin(data: data): Promise<any> {
 	let { email, userName, password } = data;
 
 	try {
 		const res = await fetch(`${apiRestUrl}/${userUrl}/${loginUrl}`, {
 			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
 			body: JSON.stringify({
-				token: tokenFromLocalStorage,
+				token: localStorage.getItem("Token"),
 				email,
 				userName,
 				password,
@@ -23,9 +31,11 @@ export default async function userLogin(data: data): Promise<boolean> {
 		});
 		const response = await res.json();
 
-		return response.success === true; //True: Acces grant; False: Access denied
+		localStorage.setItem("Token", response.token);
+
+		return response;
 	} catch (error) {
 		console.error("Login error:", error);
-		return false;
+		return error;
 	}
 }

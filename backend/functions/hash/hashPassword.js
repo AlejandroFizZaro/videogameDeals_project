@@ -22,7 +22,7 @@ let comparePasswordWithHash = async (data) => {
 	let hashedPasswordFromDB = "";
 	email
 		? (userData = await controllerUser.getByEmail(email))
-		: (userData = await controllerUser.getUserName(userName));
+		: (userData = await controllerUser.getByUsername(userName));
 
 	hashedPasswordFromDB = userData.password;
 	const result = await new Promise((resolve, reject) => {

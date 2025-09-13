@@ -5,24 +5,24 @@ import { param, body, validationResult, oneOf } from "express-validator";
 
 const router = express.Router();
 
-router.get("/", (req, res) => {
+router.get("/", (req, res, next) => {
 	res.send("User menu");
 });
 
 // Developer routes. The ideal way would be to check the user role (i.e. Company admin)
 // TODO: When implementing this kind of checks, check the user role
 
-router.get("/all", (req, res) => {
+router.get("/all", (req, res, next) => {
 	controllerUser.getAll();
 	res.send("All user data obtained");
 });
 
-router.get("/create", (req, res) => {
+router.get("/create", (req, res, next) => {
 	controllerUser.createUserDb();
 	res.send("Users database created");
 });
 
-router.get("/delete", (req, res) => {
+router.get("/delete", (req, res, next) => {
 	controllerUser.removeTable();
 	res.send("User table removed");
 });
@@ -30,43 +30,41 @@ router.get("/delete", (req, res) => {
 router.post(
 	"/register",
 	[
+		body("userName")
+			.notEmpty()
+			.withMessage("The userName must not be empty.")
+			.trim(),
+
 		body("email")
 			.notEmpty()
 			.withMessage("Email required.")
 			.isEmail()
-			.normalizeEmail()
 			.withMessage("The field must contain an email.")
-			.trim()
-			.escape(),
-
-		body("userName")
-			.notEmpty()
-			.withMessage("The userName must not be empty.")
-			.trim()
-			.escape(),
+			.normalizeEmail(),
 
 		body("password")
 			.notEmpty()
+			.withMessage("Password required.")
 			.isLength({ min: 7, max: 255 })
 			.withMessage("A password must contain between 7 and 255 characters.")
-			.trim()
-			.escape(),
+			.trim(),
 	],
 	(req, res) => {
 		const errors = validationResult(req);
 		if (!errors.isEmpty()) {
 			return res.status(400).json({ errors: errors.array() });
 		}
-		let data = req.body;
-		let { email, userName, password } = data;
+
+		const { email, userName, password } = req.body;
+
 		if (!email || !userName || !password) {
 			return res.status(401).json({ error: "Missing credentials" });
 		}
-		controllerUser.register(data);
+
+		controllerUser.register({ email, userName, password });
+
 		res.status(200).send({
 			message: "New user registered. Token will be generated in the login.",
-			token: res.token,
-			access: res.access,
 		});
 	}
 );
@@ -117,7 +115,7 @@ router.post(
 			"You must provide either email+password, userName+password, or a token cookie."
 		),
 	],
-	(req, res) => {
+	async (req, res, next) => {
 		const errors = validationResult(req);
 		if (!errors.isEmpty()) {
 			return res.status(400).json({ errors: errors.array() });
@@ -128,16 +126,11 @@ router.post(
 		const { userName, email, password, token } = data;
 		if (!token) {
 			console.log("Token was not used. Using credentials...");
-			if (
-				(!email && !userName) ||
-				(email && !userName) ||
-				(!email && userName) ||
-				!password
-			)
+			if ((!email || !userName) && !password)
 				return res.status(401).json({ error: "Missing credentials" });
 		}
 		let response = controllerUser.login(data);
-		res.send(response);
+		res.status(200).json(await response);
 	}
 );
 
@@ -161,7 +154,7 @@ router.post(
 			.trim()
 			.escape(),
 	],
-	(req, res) => {
+	(req, res, next) => {
 		const errors = validationResult(req);
 		if (!errors.isEmpty()) {
 			return res.status(400).json({ errors: errors.array() });
@@ -176,11 +169,11 @@ router.post(
 	}
 );
 
-router.get("/list/:id", (req, res) => {
+router.get("/list/:id", (req, res, next) => {
 	const id = req.params.id;
 	controllerUser.getById(id);
 });
-router.get("/:id", (req, res) => {
+router.get("/:id", (req, res, next) => {
 	const id = req.params.id;
 	controllerUser.getByIdWithoutPassword(id);
 	res.send("Be careful");
