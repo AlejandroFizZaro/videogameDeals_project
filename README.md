@@ -46,7 +46,7 @@ Create the .env file in the backend folder and fill the following data:
 
 Secondly, go to the backend folder, open a console and type the following commands:
 #### Postgres docker:
-    Docker compose up
+    docker compose up
 #### Express:
     npm install
     npm run dev
