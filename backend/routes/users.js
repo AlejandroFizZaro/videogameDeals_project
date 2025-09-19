@@ -78,14 +78,10 @@ router.post(
 		});
 	}
 );
-
-//I have tested with fake data that the token in cookie is well received in this call, but I didn't test with express validator
-// TODO: see if its possible to implement express validator properly in this call
 /* Background: 
-	-	I set the validator with the intention to  validate only the cookie token in case there is no user data	
+	-	I set the validator with the intention to  validate only the localhost token in case there is no user data	
 	-	The validator send all the possible error message when a good http call is sent
 	-	"No password", "No email", "No cookie"
-	-	Maybe express operator cannot handle properly this specific requirement
  */
 router.post(
 	"/login",
@@ -130,8 +126,7 @@ router.post(
 		if (!errors.isEmpty()) {
 			return res.status(400).json({ errors: errors.array() });
 		}
-		// Token is stored in client side --> cookie
-		// TODO: Continue with frontend and go back to cookie in token test
+		// Token is stored in client side --> localhost
 		const data = req.body;
 		const { userName, email, password, token } = data;
 		if (!token) {

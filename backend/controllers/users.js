@@ -70,7 +70,6 @@ const register = async ({ userName, email, password }) => {
 	return hashPassword.hashPasswordAndSendToDb({ userName, email, password });
 };
 
-// TODO: Check  how backend accept token from frontend (to do once start workin in frontend)
 let login = async (data) => {
 	let { token, email, userName, password } = data;
 	let tokenValidationStatus = validateToken(token);
@@ -104,7 +103,6 @@ let login = async (data) => {
 				let userName = authenticatedUserData?.user_name;
 				if (token && tokenIsExpired) {
 					let refreshToken = signRefreshToken(userId);
-					// TODO: Set function for token refresh replace
 					await controllerSessions.replace(userId, refreshToken);
 					return { email, userName, token: refreshToken };
 				}

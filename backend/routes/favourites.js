@@ -8,13 +8,11 @@ const router = express.Router();
 router.get("/", (req, res, next) => {
 	res.send("Favourite menu");
 });
-// TODO: Set controller
 router.get("/list/:id", (req, res, next) => {
 	const id = req.params.id;
 	controllerFavourites.getById(id);
 });
 
-// TODO: Set controller
 router.get("/list/:id/:game", (req, res, next) => {
 	const id = req.params.id;
 	const game = req.params.game;
