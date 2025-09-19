@@ -49,7 +49,7 @@ router.post(
 			.withMessage("A password must contain between 7 and 255 characters.")
 			.trim(),
 	],
-	(req, res) => {
+	async (req, res) => {
 		const errors = validationResult(req);
 		if (!errors.isEmpty()) {
 			return res.status(400).json({ errors: errors.array() });
@@ -61,7 +61,17 @@ router.post(
 			return res.status(401).json({ error: "Missing credentials" });
 		}
 
-		controllerUser.register({ email, userName, password });
+		let controllerResponse = await controllerUser.register({
+			email,
+			userName,
+			password,
+		});
+		if (controllerResponse === "userAlreadyInDb") {
+			res.status(200).send({
+				message: "User already exist",
+			});
+			return;
+		}
 
 		res.status(200).send({
 			message: "New user registered. Token will be generated in the login.",
@@ -125,7 +135,6 @@ router.post(
 		const data = req.body;
 		const { userName, email, password, token } = data;
 		if (!token) {
-			console.log("Token was not used. Using credentials...");
 			if ((!email || !userName) && !password)
 				return res.status(401).json({ error: "Missing credentials" });
 		}

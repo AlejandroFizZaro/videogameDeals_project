@@ -37,6 +37,7 @@ export default function WatchList() {
 
 	const setRegisterMenu = () => {
 		setMenu("register");
+		setRegisteredStatus(false); // Hide text that confirm the user has been registered
 		hideCredentialErrors();
 	};
 
@@ -81,13 +82,21 @@ export default function WatchList() {
 					setRegisteredStatus(false);
 					return;
 				}
-				await userRegister(data);
+				let response = await userRegister(data);
+				// Backend check if user is duplicate, it will send a message.
+				// In the front end, we need to generate an error and interrupt the register process
+				if (response.message === "User already exist") {
+					setError(response.message);
+					return;
+				}
+				setError("");
 				setRegisteredStatus(true);
 			}
 			if (menuSelected === "login") {
 				if (!userName || !email) {
-					setErrorMissingUserName("The user name or email are missing.");
-					setErrorMissingEmail("The user name or email are missing.");
+					!userName &&
+						setErrorMissingUserName("The user name or email are missing.");
+					!email && setErrorMissingEmail("The user name or email are missing.");
 				}
 				if (!password) {
 					setErrorMissingPassword("The password is missing.");
@@ -127,78 +136,82 @@ export default function WatchList() {
 				</div>
 			) : (
 				<div id="Not logged">
-					<div className="flex h-10">
+					<div className="flex h-15">
 						<div
 							className={` w-1/2 ${
-								menuSelected === "register" && " bg-blue-500"
-							}`}
+								menuSelected === "register" && "bg-blue-500 "
+							} text-center p-4 `}
 							onClick={setRegisterMenu}
 						>
 							Register
 						</div>
 						<div
-							className={`w-1/2 ${menuSelected === "login" && " bg-blue-500"}`}
+							className={`w-1/2 ${
+								menuSelected === "login" && "bg-blue-500 "
+							} text-center p-4`}
 							onClick={setLoginMenu}
 						>
 							Login
 						</div>
 					</div>
-					<div className="pt-10 pl-16 pr-16 pb-10 text-center">
-						You need to login or create an account to access the favourites
-						menu.
-						<div>
-							{menuSelected === "register"
-								? "Create an account"
-								: "Login with the user name or email"}
+					<div className="overflow-scroll w-full">
+						<div className="pt-10 pl-16 pr-16 pb-10 text-center">
+							You need to login or create an account to access the favourites
+							menu.
+							<div>
+								{menuSelected === "register"
+									? "Create an account"
+									: "Login with the user name or email"}
+							</div>
 						</div>
-					</div>
-					<form className="pl-2 pr-2 grid" onSubmit={onSubmit}>
-						<div className="grid">
-							username
-							<div className="text-red-600">{errorMissingUserName}</div>
-							<input
-								type="text"
-								name="userName"
-								placeholder="myUserNameExample"
-								className="m-2 border-4 border-amber-50 rounded-2xl p-2"
-							/>
-						</div>
-						<div className="grid">
-							email
-							<div className="text-red-600">{errorMissingEmail}</div>
-							<input
-								type="text"
-								name="email"
-								placeholder="myemail@example.com"
-								className="m-2 border-4 border-amber-50 rounded-2xl p-2"
-							/>
-						</div>
-						<div className="grid">
-							password
-							<div className="text-red-600">{errorMissingPassword}</div>
-							<input
-								type="password"
-								name="password"
-								placeholder="password"
-								className="m-2 border-4 border-amber-50 rounded-2xl p-2"
-							/>
-						</div>
+						<form className="pl-2 pr-2 grid" onSubmit={onSubmit}>
+							<div className="grid">
+								username
+								<div className="text-red-600">{errorMissingUserName}</div>
+								<input
+									type="text"
+									name="userName"
+									placeholder="myUserNameExample"
+									className="m-2 border-4 border-amber-50 rounded-2xl p-2"
+								/>
+							</div>
+							<div className="grid">
+								email
+								<div className="text-red-600">{errorMissingEmail}</div>
+								<input
+									type="text"
+									name="email"
+									placeholder="myemail@example.com"
+									className="m-2 border-4 border-amber-50 rounded-2xl p-2"
+								/>
+							</div>
+							<div className="grid">
+								password
+								<div className="text-red-600">{errorMissingPassword}</div>
+								<input
+									type="password"
+									name="password"
+									placeholder="password"
+									className="m-2 border-4 border-amber-50 rounded-2xl p-2"
+								/>
+							</div>
 
-						<button
-							type="submit"
-							className=" p-2 bg-blue-500 border-2 border-blue-200 rounded-2xl"
-						>
-							Submit
-						</button>
-						<div className="text-green-600">
-							{menuSelected === "register" &&
-								registered === true &&
-								"The user has been registered"}
-						</div>
-						{isLoading && <p>Cargando...</p>}
-						{error && <p style={{ color: "red" }}>{error}</p>}
-						{logged && <p>Bienvenido!</p>}
-					</form>
+							<button
+								type="submit"
+								className=" p-2 bg-blue-500 border-2 border-blue-200 rounded-2xl"
+							>
+								Submit
+							</button>
+							<div className="text-green-600">
+								{menuSelected === "register" &&
+									registered === true &&
+									"The user has been registered"}
+							</div>
+							{isLoading && <p>Cargando...</p>}
+							{error && <p style={{ color: "red" }}>{error}</p>}
+							{logged && <p>Bienvenido!</p>}
+						</form>
+					</div>
 				</div>
 			)}
 		</div>

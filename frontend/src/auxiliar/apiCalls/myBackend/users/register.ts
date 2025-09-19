@@ -9,7 +9,7 @@ type data = {
 export default async function userRegister(data: data): Promise<any> {
 	let { email, userName, password } = data;
 	try {
-		let response = await fetch(`${apiRestUrl}/${userUrl}/${registerUrl}`, {
+		let res = await fetch(`${apiRestUrl}/${userUrl}/${registerUrl}`, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
@@ -20,7 +20,7 @@ export default async function userRegister(data: data): Promise<any> {
 				password,
 			}),
 		});
-		return response.json();
+		return await res.json();
 	} catch (error) {
 		console.log("Register error:", error);
 		return error;

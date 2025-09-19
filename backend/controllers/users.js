@@ -51,31 +51,28 @@ let createUserDb = async () => {
 		)`;
 		return true;
 	} catch (error) {
-		console.log(error);
 		return false;
 	}
 };
 
-let register = async (data) => {
-	let { userName, email, password } = data;
+const register = async ({ userName, email, password }) => {
+	const userId =
+		(await getByUsername(userName))?.id || (await getByEmail(email))?.id;
 
-	let userId = await getUserId(email, userName);
-	if (userId) {
-		console.log("User exist already");
+	if (await userId) {
+		return "userAlreadyInDb";
+	}
+
+	if (!password) {
 		return;
 	}
 
-	if (password) {
-		await hashPassword.hashPasswordAndSendToDb(data);
-	} else {
-		console.log("Missing password");
-		return;
-	}
+	return hashPassword.hashPasswordAndSendToDb({ userName, email, password });
 };
 
 // TODO: Check  how backend accept token from frontend (to do once start workin in frontend)
 let login = async (data) => {
-	const { token, email, userName, password } = data;
+	let { token, email, userName, password } = data;
 	let tokenValidationStatus = validateToken(token);
 	let tokenIsCorrect = (await tokenValidationStatus)?.correct;
 	let tokenIsExpired = (await tokenValidationStatus)?.expired;
@@ -83,20 +80,19 @@ let login = async (data) => {
 	let tokenIsValid = token && tokenIsCorrect && !tokenIsExpired;
 
 	if (tokenIsValid) {
-		console.log("Access granted");
 		return token;
 	} else {
+		// If there is an existant token in local storage and is not correct, we remove it from the variable in order to
+		token = null;
 		if ((email != "" || userName != "") && password) {
 			// Compare the hash password with the input password.
 			// If the password is ok, the function will return the user data in an object
 			// In case it not ok, it will send a "false" value
 			let credentials = { email, userName, password };
-			console.log("credentials", credentials);
 			let authenticatedUserData = await hashPassword.comparePasswordWithHash(
 				credentials
 			);
 			if (authenticatedUserData === false) {
-				console.log("The credentials are not correct. Please repeat again");
 				return;
 			}
 			// User data is sent from the authenticator as an object
@@ -118,13 +114,10 @@ let login = async (data) => {
 					return { email, userName, token: newToken };
 				}
 			} else {
-				console.log(
-					"An error occurred while validating the credentials. Please try again"
-				);
 				return;
 			}
 		} else {
-			console.log("No data for logging in");
+			return;
 		}
 	}
 };

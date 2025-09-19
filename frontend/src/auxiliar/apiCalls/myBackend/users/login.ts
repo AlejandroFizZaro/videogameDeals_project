@@ -15,7 +15,6 @@ type response = {
 
 export default async function userLogin(data: data): Promise<any> {
 	let { email, userName, password } = data;
-
 	try {
 		const res = await fetch(`${apiRestUrl}/${userUrl}/${loginUrl}`, {
 			method: "POST",
@@ -30,7 +29,6 @@ export default async function userLogin(data: data): Promise<any> {
 			}),
 		});
 		const response = await res.json();
-
 		localStorage.setItem("Token", response.token);
 
 		return response;

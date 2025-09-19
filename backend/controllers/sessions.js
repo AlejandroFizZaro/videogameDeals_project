@@ -26,7 +26,6 @@ let createTable = async () => {
 
 let add = async (user_id, token) => {
 	try {
-		console.log({ user_id, token });
 		await sql`INSERT INTO sessionlist (
 			user_id,
 			token
@@ -36,7 +35,6 @@ let add = async (user_id, token) => {
 			${token}
 			) 
 		 ON CONFLICT (user_id) DO NOTHING`;
-		console.log("Token was added to the sessions database");
 	} catch (e) {
 		console.log("Error while adding data to sessions table");
 		console.log(e);
@@ -46,7 +44,6 @@ let add = async (user_id, token) => {
 let remove = async (user_id) => {
 	try {
 		await sql`DELETE FROM sessionlist WHERE user_id = ${user_id}`;
-		console.log(`Token from user id ${user_id} removed`);
 	} catch (error) {}
 };
 

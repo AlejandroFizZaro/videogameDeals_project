@@ -19,7 +19,7 @@ let createAccountToken = (authenticatedUserData) => {
 			aud: process.env.JWT_AUD,
 		},
 		privateKey,
-		{ expiresIn: "1 hour" }
+		{ expiresIn: 60 } // 60 seconds
 	);
 };
 

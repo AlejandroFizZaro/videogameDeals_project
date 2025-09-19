@@ -15,10 +15,9 @@ let validateToken = async (cookieToken) => {
 				} else {
 					tokenResults.correct = false;
 				}
-				console.log("The cookie token is expired or is not correct");
+
 				resolve(tokenResults);
 			} else {
-				console.log("Token correct");
 				resolve(tokenResults);
 			}
 		});

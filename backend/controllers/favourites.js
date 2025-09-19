@@ -1,14 +1,9 @@
 import sql from "../functions/db/dbConnect.js";
 
 let createFavouriteDb = async () => {
-	console.log("Creating fake db...");
-
 	// remove this line below before launch
 	await sql`DROP TABLE IF EXISTS favourites`;
-	console.log("Old favourite games table was removed...");
-
 	await sql`CREATE TABLE IF NOT EXISTS favourites ( id SERIAL PRIMARY KEY, game_id VARCHAR(255) NOT NULL, user_id SERIAL references users(id) NOT NULL, UNIQUE (game_id, user_id))`;
-	console.log("Favourite games table was created...");
 };
 
 let deleteTable = async () => {

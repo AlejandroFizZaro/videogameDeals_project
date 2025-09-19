@@ -34,7 +34,6 @@ let styleSeparatePricing: string = "ml-4 mr-4";
 const BiggestDiscounts: React.FC<MyComponentProps> = () => {
 	const [deals, setDeals] = useState<Deal[]>([]);
 	const [loading, setLoading] = useState<boolean>(true);
-	const [logged, setLogged] = useState<boolean>(false);
 
 	// ⭐ Save favourites by dealID
 	const [favorites, setFavorites] = useState<{ [key: string]: boolean }>({});
@@ -62,15 +61,18 @@ const BiggestDiscounts: React.FC<MyComponentProps> = () => {
 
 	return (
 		<>
-			<div className="w-full text-center bg-green-800 ">Best deals</div>
+			<div className="flex h-15 w-full">
+				<div className="w-full text-center bg-green-800 p-4">Best deals</div>
+			</div>
+
 			{loading === true ? (
 				<LoadingIcon />
 			) : (
 				<div className="overflow-scroll w-full">
-					<ul className="">
+					<ul className="p-3">
 						{deals.map((row) => (
 							<div key={row.dealID}>
-								<div className="flex pt-2">
+								<div className="table pt-2">
 									<li title={row.title}>
 										<img src={row.thumb} alt={row.title} width={130} />
 									</li>
@@ -97,7 +99,7 @@ const BiggestDiscounts: React.FC<MyComponentProps> = () => {
 											className=" w-full"
 											onClick={() => toggleFavorite(row.dealID)}
 										>
-											{logged ? (
+											{localStorage.getItem("Token") ? (
 												<svg
 													viewBox="0 0 34 34"
 													xmlns="http://www.w3.org/2000/svg"
